@@ -1,4 +1,4 @@
-package com.furnicycle.Ecommerce.repository;
+package com.praveen.Ecommerce.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

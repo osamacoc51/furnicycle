@@ -1,4 +1,4 @@
-package com.furnicycle.Ecommerce;
+package com.praveen.Ecommerce;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
