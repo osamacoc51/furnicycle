@@ -42,8 +42,7 @@ public class CategoryEntity {
 		this.productsEntity.add(product);
 		product.setCategoryEntity(this);
 		
-	}
-//	
+	}	
 	public void removeProduct(ProductEntity product) {
 	    this.productsEntity.remove(product);
 	    product.setCategoryEntity(null);

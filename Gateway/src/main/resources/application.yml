@@ -3,10 +3,13 @@ spring:
     admin:
       client:
         url: http://localhost:8081
-        
   application:
     name: Api-Gateway
-
+  sleuth:
+    sampler:
+      probability: 1.0   # Ensures all requests are traced
+  zipkin:
+    base-url: http://localhost:9411  # Zipkin server URL
   cloud:
     gateway:
       routes:
@@ -29,7 +32,8 @@ spring:
               args:
                 name: productServiceCB
                 fallbackUri: forward:/fallback/product
-        - id: product-service
+
+        - id: product-service-category
           uri: lb://product-service
           predicates:
             - Path=/category/**
@@ -68,8 +72,6 @@ spring:
               args:
                 name: inventoryServiceCB
                 fallbackUri: forward:/fallback/inventory
-                
-         
 
 resilience4j:
   circuitbreaker:
@@ -104,8 +106,6 @@ resilience4j:
         wait-duration-in-open-state: 30s
         failure-rate-threshold: 50
         register-health-indicator: true
-         
-          
 
 eureka:
   client:
@@ -113,55 +113,21 @@ eureka:
       defaultZone: http://localhost:8761/eureka/
   instance:
     prefer-ip-address: true
+    hostname: localhost
 
 server:
   port: 8089
-  
+
 management:
   tracing:
     sampling:
       probability: 1.0
-      
-      
   endpoints:
     web:
       exposure:
         include: '*'
-        
-        
-
 
 logging:
   level:
     '[org.springframework.cloud.gateway]': DEBUG
     '[io.github.resilience4j]': DEBUG
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
