@@ -7,11 +7,19 @@ spring:
     name: Api-Gateway
   sleuth:
     sampler:
-      probability: 1.0   # Ensures all requests are traced
+      probability: 1.0  # Ensures all requests are traced
   zipkin:
     base-url: http://localhost:9411  # Zipkin server URL
   cloud:
     gateway:
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
       routes:
         - id: user-service
           uri: lb://user-service
@@ -52,7 +60,7 @@ spring:
               args:
                 name: cartServiceCB
                 fallbackUri: forward:/fallback/cart
-                
+
         - id: order-service
           uri: lb://order-service
           predicates:
@@ -62,7 +70,7 @@ spring:
               args:
                 name: orderServiceCB
                 fallbackUri: forward:/fallback/orders
-                
+
         - id: inventory-service
           uri: lb://inventory-service
           predicates:

@@ -22,7 +22,7 @@ import com.furnicycle.Ecommerce.service.CategoryService;
 
 @CrossOrigin("*")
 @RestController
-@RequestMapping("/category")
+@RequestMapping("category")
 public class CategoryController {
 	
 	@Autowired
