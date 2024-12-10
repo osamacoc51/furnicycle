@@ -22,8 +22,7 @@ const LoginPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    setError(""); // Clear previous errors
+    setError("");
 
     try {
       const loginDto = {
@@ -33,12 +32,14 @@ const LoginPage = () => {
 
       // Call login service
       const user = await UserService.login(loginDto);
+      if (user) {
+        const role = user.userDTO.userRole;
 
-      // Check if user is found and password matches
-      if (user && user.userName === formData.username && user.password === formData.password) {
-        // Navigate based on user role (assuming role is returned from backend)
-        if (user.userRole === "CUSTOMER") {
+        // Navigate based on user role
+        if (role === "CUSTOMER") {
           navigate("/productlist");
+        } else if (role === "ADMIN") {
+          navigate("/products");
         } else {
           setError("Unauthorized role for login");
         }
@@ -50,6 +51,7 @@ const LoginPage = () => {
       setError("Invalid username or password");
     }
   };
+
 
   return (
     <div className="container mt-5">

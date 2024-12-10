@@ -91,24 +91,32 @@ const UserService = {
       // Check if login is successful
       if (response.status === 200) {
         console.log("Login successful:", response.data);
-        // Store user info in localStorage or context and proceed
+
+        // Store user info in sessionStorage
+        sessionStorage.setItem("user", JSON.stringify(response.data));
+
+        return response.data;
       }
     } catch (error) {
       console.error("Error logging in:", error.response);
       if (error.response && error.response.status === 401) {
         alert("Invalid username or password");
+      } else {
+        alert("An error occurred during login. Please try again.");
       }
+      return null;
     }
   },
 
   // Logout a user
   logout: () => {
-    localStorage.removeItem("user");
+    sessionStorage.removeItem("user"); // Clear user data from sessionStorage
   },
 
-  // Get the current user from localStorage
+  // Get the current user from sessionStorage
   getCurrentUser: () => {
-    return JSON.parse(localStorage.getItem("user"));
+    const user = sessionStorage.getItem("user");
+    return user ? JSON.parse(user) : null; // Parse user data if exists
   },
 };
 
