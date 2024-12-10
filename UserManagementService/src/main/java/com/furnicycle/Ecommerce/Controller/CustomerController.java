@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.furnicycle.Ecommerce.DTO.CustomerDTO;
+import com.furnicycle.Ecommerce.DTO.LoginDto;
 import com.furnicycle.Ecommerce.Service.CustomerService;
 
 
@@ -93,6 +94,19 @@ public class CustomerController {
 				.body(customerService.isValidCustomer(customerId));
 	}
 	
-	
-	
-}
+	@PostMapping("/login")
+	public ResponseEntity<CustomerDTO> login(@RequestBody LoginDto loginDto) {
+	    logger.info("Received login request for user: {}", loginDto.getUserName());
+	    try {
+	        CustomerDTO customerDTO = customerService.login(loginDto);
+	        
+	        // Make sure userRole is included
+	        logger.info("Login successful for user: {}", loginDto.getUserName());
+	        return new ResponseEntity<>(customerDTO, HttpStatus.OK);
+	    } catch (Exception e) {
+	        logger.error("Login failed for user: {}. Reason: {}", loginDto.getUserName(), e.getMessage());
+	        return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+	    }
+	}
+
+	}

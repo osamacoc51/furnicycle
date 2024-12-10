@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import UserService from "../../services/UserService";
+import login from "../../assets/login.jpg";
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
-    userId: "",
+    username: "",
     password: "",
   });
 
@@ -21,109 +23,84 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Clear previous error
-    setError("");
+    setError(""); // Clear previous errors
 
     try {
-      // Replace with your backend API endpoint
-      const response = await fetch("http://localhost:8089/customer/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+      const loginDto = {
+        userName: formData.username,
+        password: formData.password,
+      };
 
-      if (!response.ok) {
-        throw new Error("Invalid credentials");
-      }
+      // Call login service
+      const user = await UserService.login(loginDto);
 
-      const data = await response.json();
-
-      // Check role and navigate
-      if (data.userRole === "user") {
-        navigate("/user-dashboard");
-      } else if (data.userRole === "admin") {
-        navigate("/admin-dashboard");
+      // Check if user is found and password matches
+      if (user && user.userName === formData.username && user.password === formData.password) {
+        // Navigate based on user role (assuming role is returned from backend)
+        if (user.userRole === "CUSTOMER") {
+          navigate("/productlist");
+        } else {
+          setError("Unauthorized role for login");
+        }
       } else {
-        setError("Invalid role");
+        setError("Invalid username or password");
       }
-    } catch (err) {
-      setError(err.message || "Login failed");
+    } catch (error) {
+      console.error("Login error:", error);
+      setError("Invalid username or password");
     }
   };
 
   return (
-    <div style={styles.container}>
-      <h2>Login</h2>
-      <form onSubmit={handleSubmit} style={styles.form}>
-        <div style={styles.formGroup}>
-          <label>User ID:</label>
-          <input
-            type="text"
-            name="userId"
-            value={formData.userId}
-            onChange={handleChange}
-            style={styles.input}
-            required
+    <div className="container mt-5">
+      <h2 className="text-center mb-4">Login</h2>
+      {error && <div className="alert alert-danger text-center">{error}</div>}
+      <div className="row align-items-center">
+        <div className="col-md-6">
+          <img
+            src={login}
+            alt="Login Illustration"
+            className="img-fluid"
           />
         </div>
-        <div style={styles.formGroup}>
-          <label>Password:</label>
-          <input
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            style={styles.input}
-            required
-          />
+        <div className="col-md-6">
+          <form onSubmit={handleSubmit}>
+            <div className="mb-3">
+              <label htmlFor="username" className="form-label">
+                Username:
+              </label>
+              <input
+                type="text"
+                className="form-control"
+                id="username"
+                name="username"
+                value={formData.username}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div className="mb-3">
+              <label htmlFor="password" className="form-label">
+                Password:
+              </label>
+              <input
+                type="password"
+                className="form-control"
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <button type="submit" className="btn btn-primary w-100">
+              Login
+            </button>
+          </form>
         </div>
-        {error && <p style={styles.error}>{error}</p>}
-        <button type="submit" style={styles.button}>
-          Login
-        </button>
-      </form>
+      </div>
     </div>
   );
-};
-
-const styles = {
-  container: {
-    maxWidth: "400px",
-    margin: "50px auto",
-    padding: "20px",
-    border: "1px solid #ccc",
-    borderRadius: "8px",
-    textAlign: "center",
-  },
-  form: {
-    display: "flex",
-    flexDirection: "column",
-  },
-  formGroup: {
-    marginBottom: "15px",
-    textAlign: "left",
-  },
-  input: {
-    width: "100%",
-    padding: "8px",
-    margin: "5px 0",
-    borderRadius: "4px",
-    border: "1px solid #ccc",
-  },
-  button: {
-    padding: "10px 15px",
-    borderRadius: "4px",
-    backgroundColor: "#007BFF",
-    color: "#fff",
-    border: "none",
-    cursor: "pointer",
-  },
-  error: {
-    color: "red",
-    fontSize: "12px",
-  },
 };
 
 export default LoginPage;

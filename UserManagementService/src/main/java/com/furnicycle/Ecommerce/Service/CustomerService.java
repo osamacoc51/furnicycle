@@ -3,6 +3,7 @@ package com.furnicycle.Ecommerce.Service;
 import java.util.List;
 
 import com.furnicycle.Ecommerce.DTO.CustomerDTO;
+import com.furnicycle.Ecommerce.DTO.LoginDto;
 
 public interface CustomerService {
 	
@@ -19,4 +20,6 @@ public interface CustomerService {
 	public List<CustomerDTO> getAllCustomers();
 	
 	public boolean isValidCustomer(Integer customerId);
+	
+	public CustomerDTO login(LoginDto loginDto);
 }

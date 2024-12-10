@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.furnicycle.Ecommerce.DTO.CustomerDTO;
+import com.furnicycle.Ecommerce.DTO.LoginDto;
 import com.furnicycle.Ecommerce.DTO.UserDTO;
 import com.furnicycle.Ecommerce.Entity.CustomerEntity;
 import com.furnicycle.Ecommerce.Entity.UserEntity;
@@ -149,5 +150,58 @@ public class CustomerServiceImpl implements CustomerService {
 			return false;
 		}
 	}
+
+
+
+	@Override
+	public CustomerDTO login(LoginDto loginDto) {
+	    logger.info("Attempting login for user: {}", loginDto.getUserName());
+
+	    // Fetch the user by username
+	    Optional<UserEntity> optionalUser = userRepository.findByUsername(loginDto.getUserName());
+	    if (!optionalUser.isPresent()) {
+	        logger.warn("User not found with username: {}", loginDto.getUserName());
+	        throw new CustomerNotFoundException("User not found with username: " + loginDto.getUserName());
+	    }
+
+	    UserEntity user = optionalUser.get();
+	    logger.info("User found with username: {}", loginDto.getUserName());
+
+	    // Validate password
+	    if (!user.getPassword().equals(loginDto.getPassword())) {
+	        logger.warn("Invalid password for username: {}", loginDto.getUserName());
+	        throw new RuntimeException("Invalid password");
+	    }
+	    logger.info("Password validated for username: {}", loginDto.getUserName());
+
+	    // Fetch the associated customer
+	    Optional<CustomerEntity> optionalCustomer = customerRepository.findByUserEntity(user);
+	    if (!optionalCustomer.isPresent()) {
+	        logger.warn("No customer associated with user: {}", loginDto.getUserName());
+	        throw new CustomerNotFoundException("No customer associated with the provided credentials");
+	    }
+
+	    CustomerEntity customerEntity = optionalCustomer.get();
+	    logger.info("Customer associated with username: {} found with ID: {}", loginDto.getUserName(), customerEntity.getCustomerId());
+
+	    // Map the CustomerEntity to CustomerDTO
+	    CustomerDTO customerDTO = new CustomerDTO();
+	    customerDTO.setCustomerId(customerEntity.getCustomerId());
+	    customerDTO.setCustomerName(customerEntity.getCustomerName());
+	    customerDTO.setAddress(customerEntity.getAddress());
+
+	    // Set the userDTO in the CustomerDTO
+	    UserDTO userDTO = new UserDTO();
+	    userDTO.setUserId(user.getUserId());
+	    userDTO.setUsername(user.getUsername());
+	    userDTO.setPassword(user.getPassword());
+	    userDTO.setUserRole(user.getUserRole());
+
+	    customerDTO.setUserDTO(userDTO);
+
+	    logger.info("Login successful for user: {}. Returning customer details.", loginDto.getUserName());
+	    return customerDTO;
+	}
+
 
 }

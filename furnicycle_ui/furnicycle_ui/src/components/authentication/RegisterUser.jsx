@@ -1,30 +1,34 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import UserService from "../../services/UserService";
+import signup from "../../assets/signup.jpg";
 
 const CustomerForm = () => {
   const [formData, setFormData] = useState({
     customerName: "",
     address: "",
-    user: {
-      userId: "",
+    userDTO: {
       username: "",
       password: "",
-      userRole: "user", // Default role
+      userRole: "CUSTOMER", // Default role
     },
   });
 
   const [errors, setErrors] = useState({});
+  const [successMessage, setSuccessMessage] = useState("");
+  const navigate = useNavigate();
 
   // Handle form input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    if (name.startsWith("user.")) {
-      // Handle nested user fields
+    if (name.startsWith("userDTO.")) {
+      // Handle nested userDTO fields
       const field = name.split(".")[1];
       setFormData((prevData) => ({
         ...prevData,
-        user: {
-          ...prevData.user,
+        userDTO: {
+          ...prevData.userDTO,
           [field]: value,
         },
       }));
@@ -40,154 +44,154 @@ const CustomerForm = () => {
   // Validate the form
   const validate = () => {
     const newErrors = {};
-    if (!formData.customerName.trim()) newErrors.customerName = "Customer name is required.";
-    if (!formData.address.trim()) newErrors.address = "Address is required.";
-    if (!formData.user.userId.trim()) newErrors.userId = "User ID is required.";
-    if (!formData.user.username.trim()) newErrors.username = "Username is required.";
-    if (!formData.user.password.trim()) newErrors.password = "Password is required.";
+    if (!formData.customerName.trim())
+      newErrors.customerName = "Customer name is required.";
+    if (!formData.address.trim())
+      newErrors.address = "Address is required.";
+    if (!formData.userDTO.username.trim())
+      newErrors.username = "Username is required.";
+    if (!formData.userDTO.password.trim())
+      newErrors.password = "Password is required.";
     return newErrors;
   };
 
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
     } else {
       setErrors({});
-      console.log("Submitted Data:", formData);
+      try {
+        const response = await UserService.addUser(formData);
+        console.log("Customer saved successfully:", response);
+        setSuccessMessage("Customer registered successfully!");
 
-      // Example API call
-      fetch("http://localhost:8099/customer/add", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          console.log("Customer saved successfully:", data);
-        })
-        .catch((error) => {
-          console.error("Error saving customer:", error);
-        });
+        // Redirect to login page
+        setTimeout(() => {
+          navigate("/login");
+        }, 1000);
+      } catch (error) {
+        console.error("Error saving customer:", error);
+        setSuccessMessage("Failed to register customer. Please try again.");
+      }
     }
   };
 
   return (
-    <div style={styles.container}>
-      <h2>Register Customer</h2>
-      <form onSubmit={handleSubmit} style={styles.form}>
-        <div style={styles.formGroup}>
-          <label>Customer Name:</label>
-          <input
-            type="text"
-            name="customerName"
-            value={formData.customerName}
-            onChange={handleChange}
-            style={styles.input}
-          />
-          {errors.customerName && <p style={styles.error}>{errors.customerName}</p>}
-        </div>
-        <div style={styles.formGroup}>
-          <label>Address:</label>
-          <input
-            type="text"
-            name="address"
-            value={formData.address}
-            onChange={handleChange}
-            style={styles.input}
-          />
-          {errors.address && <p style={styles.error}>{errors.address}</p>}
-        </div>
-        <div style={styles.formGroup}>
-          <h3>User Information</h3>
-          <label>User ID:</label>
-          <input
-            type="text"
-            name="user.userId"
-            value={formData.user.userId}
-            onChange={handleChange}
-            style={styles.input}
-          />
-          {errors.userId && <p style={styles.error}>{errors.userId}</p>}
+    <>
+      <div className="container mt-5">
+        <h2 className="text-center mb-4">Register Customer</h2>
+        {successMessage && (
+          <div className="alert alert-success text-center">{successMessage}</div>
+        )}
+        <div className="row">
+          {/* Image Section */}
+          <div className="col-md-5 d-flex justify-content-center align-items-center">
+            <img
+              src={signup}
+              alt="Customer Registration"
+              className="img-fluid rounded h-100"
+            />
+          </div>
 
-          <label>Username:</label>
-          <input
-            type="text"
-            name="user.username"
-            value={formData.user.username}
-            onChange={handleChange}
-            style={styles.input}
-          />
-          {errors.username && <p style={styles.error}>{errors.username}</p>}
-
-          <label>Password:</label>
-          <input
-            type="password"
-            name="user.password"
-            value={formData.user.password}
-            onChange={handleChange}
-            style={styles.input}
-          />
-          {errors.password && <p style={styles.error}>{errors.password}</p>}
-
-          <label>Role:</label>
-          <input
-            type="text"
-            name="user.userRole"
-            value={formData.user.userRole}
-            onChange={handleChange}
-            style={styles.input}
-            disabled
-          />
+          {/* Form Section */}
+          <div className="col-md-6">
+            <form onSubmit={handleSubmit}>
+              <div className="mb-3">
+                <label htmlFor="customerName" className="form-label">
+                  Customer Name:
+                </label>
+                <input
+                  type="text"
+                  className={`form-control ${errors.customerName ? "is-invalid" : ""
+                    }`}
+                  id="customerName"
+                  name="customerName"
+                  value={formData.customerName}
+                  onChange={handleChange}
+                />
+                {errors.customerName && (
+                  <div className="invalid-feedback">{errors.customerName}</div>
+                )}
+              </div>
+              <div className="mb-3">
+                <label htmlFor="address" className="form-label">
+                  Address:
+                </label>
+                <input
+                  type="text"
+                  className={`form-control ${errors.address ? "is-invalid" : ""}`}
+                  id="address"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleChange}
+                />
+                {errors.address && (
+                  <div className="invalid-feedback">{errors.address}</div>
+                )}
+              </div>
+              <div>
+                <h3>User Information</h3>
+                <div className="mb-3">
+                  <label htmlFor="username" className="form-label">
+                    Username:
+                  </label>
+                  <input
+                    type="text"
+                    className={`form-control ${errors.username ? "is-invalid" : ""
+                      }`}
+                    id="username"
+                    name="userDTO.username"
+                    value={formData.userDTO.username}
+                    onChange={handleChange}
+                  />
+                  {errors.username && (
+                    <div className="invalid-feedback">{errors.username}</div>
+                  )}
+                </div>
+                <div className="mb-3">
+                  <label htmlFor="password" className="form-label">
+                    Password:
+                  </label>
+                  <input
+                    type="password"
+                    className={`form-control ${errors.password ? "is-invalid" : ""
+                      }`}
+                    id="password"
+                    name="userDTO.password"
+                    value={formData.userDTO.password}
+                    onChange={handleChange}
+                  />
+                  {errors.password && (
+                    <div className="invalid-feedback">{errors.password}</div>
+                  )}
+                </div>
+                <div className="mb-3">
+                  <label htmlFor="userRole" className="form-label">
+                    Role:
+                  </label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    id="userRole"
+                    name="userDTO.userRole"
+                    value={formData.userDTO.userRole}
+                    onChange={handleChange}
+                    disabled
+                  />
+                </div>
+              </div>
+              <button type="submit" className="btn btn-primary w-100">
+                Submit
+              </button>
+            </form>
+          </div>
         </div>
-        <button type="submit" style={styles.button}>
-          Submit
-        </button>
-      </form>
-    </div>
+      </div>
+    </>
   );
-};
-
-const styles = {
-  container: {
-    maxWidth: "600px",
-    margin: "50px auto",
-    padding: "20px",
-    border: "1px solid #ccc",
-    borderRadius: "8px",
-    textAlign: "center",
-  },
-  form: {
-    display: "flex",
-    flexDirection: "column",
-  },
-  formGroup: {
-    marginBottom: "15px",
-    textAlign: "left",
-  },
-  input: {
-    width: "100%",
-    padding: "8px",
-    margin: "5px 0",
-    borderRadius: "4px",
-    border: "1px solid #ccc",
-  },
-  button: {
-    padding: "10px 15px",
-    borderRadius: "4px",
-    backgroundColor: "#007BFF",
-    color: "#fff",
-    border: "none",
-    cursor: "pointer",
-  },
-  error: {
-    color: "red",
-    fontSize: "12px",
-  },
 };
 
 export default CustomerForm;
